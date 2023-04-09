@@ -1,0 +1,40 @@
+name: qBittorrent build
+on: [pull_request, push, workflow_dispatch]
+
+jobs:
+  ci:
+    name: Build
+    runs-on: windows-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x86_64
+            msystem: MINGW64
+          - arch: x86_64
+            msystem: UCRT64
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup msys2
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: ${{ matrix.msystem }}
+          install: mingw-w64-${{ matrix.arch }}-toolchain
+          update: true
+
+      - name: Build qBittorrent
+        shell: msys2 {0}
+        run: |
+          MINGW_ARCH=${{ matrix.msystem }} makepkg-mingw --noconfirm --syncdeps
+          pacman --upgrade --noconfirm mingw-w64-*
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: qBittorrent_${{ matrix.arch }}
+          path: |
+            mingw-w64-*.pkg.tar.*
