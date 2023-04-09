@@ -24,7 +24,7 @@ jobs:
           install: mingw-w64-${{ matrix.env }}-toolchain
           update: true
 
-      - name: Build qBittorrent
+      - name: Build ntl
         shell: msys2 {0}
         run: |
           MINGW_ARCH=${{ matrix.sys }} makepkg-mingw --noconfirm --syncdeps
@@ -33,6 +33,6 @@ jobs:
       - name: Upload build artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: qBittorrent_${{ matrix.env }}
+          name: ntl_${{ matrix.env }}
           path: |
             mingw-w64-*.pkg.tar.*

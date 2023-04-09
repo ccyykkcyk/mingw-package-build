@@ -32,11 +32,11 @@ build() {
 check() {
   cd "${srcdir}/${_realname}-${pkgver}/src"
 
-  make -k check
+  make check
 }
 
 package() {
   cd "${srcdir}/${_realname}-${pkgver}/src"
 
-  make PREFIX="${pkgdir}" install
+  make install DESTDIR="${pkgdir}"
 }
