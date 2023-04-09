@@ -7,7 +7,7 @@ pkgver=1.3.0
 pkgrel=1
 pkgdesc='A library for multiplying polynomials over the binary field'
 arch=('any')
-mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clang32')
+mingw_arch=('mingw32' 'mingw64' 'ucrt64')
 url='https://gitlab.inria.fr/gf2x/gf2x'
 license=(LGPL)
 makedepends=("${MINGW_PACKAGE_PREFIX}-autotools"
@@ -29,11 +29,11 @@ build() {
 check() {
   cd "${srcdir}/build-${MSYSTEM}"
 
-  make -k check
+  make check
 }
 
 package() {
   cd "${srcdir}/build-${MSYSTEM}"
 
-  make prefix="${pkgdir}" install
+  make install DESTDIR="${pkgdir}"
 }
