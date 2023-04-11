@@ -27,7 +27,6 @@ prepare() {
 }
 
 build() {
-  export WINAPI_NO_BUNDLED_LIBRARIES=1
   ${MINGW_PREFIX}/bin/cargo build \
   --release \
   --frozen \
