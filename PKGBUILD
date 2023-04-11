@@ -3,7 +3,7 @@
 _realname=starship
 pkgbase=mingw-w64-${_realname}
 pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
-pkgver=1.14.0
+pkgver=1.14.1
 pkgrel=1
 pkgdesc="The cross-shell prompt for astronauts (mingw-w64)"
 arch=('any')
@@ -15,7 +15,7 @@ makedepends=("${MINGW_PACKAGE_PREFIX}-rust"
              "${MINGW_PACKAGE_PREFIX}-cmake")
 options=('staticlibs' 'strip')
 source=("${_realname}-${pkgver}.tar.gz::https://github.com/starship/starship/archive/refs/tags/v${pkgver}.tar.gz")
-sha256sums=('f72f37b7f7a908be70b6b1435a1e7e44ef66710d7c57e290d3ac1107b9b4031a')
+sha256sums=('cd70aece33ccb393c6030e3852c677c8e6b8292a635264a0a8d7f0222eca0087')
 noextract=("${_realname}-${pkgver}.tar.gz")
 
 prepare() {
