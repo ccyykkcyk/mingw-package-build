@@ -1,63 +1,50 @@
-# Maintainer: ccyykkcyk <https://github.com/ccyykkcyk>
+# Maintainer: Naveen M K <naveen521kk@gmail.com>
 
-_realname=qbittorrent
+_realname=starship
 pkgbase=mingw-w64-${_realname}
-pkgname=${MINGW_PACKAGE_PREFIX}-${_realname}
-pkgver=4.5.2
+pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
+pkgver=1.14.0
 pkgrel=1
-pkgdesc="An advanced BitTorrent client programmed in C++, based on Qt toolkit and libtorrent-rasterbar (mingw-w64)"
+pkgdesc="The cross-shell prompt for astronauts (mingw-w64)"
 arch=('any')
-mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clang32' 'clangarm64')
-url="https://qbittorrent.org/"
-license=('spdx:GPL-2.0-or-later')
-depends=("${MINGW_PACKAGE_PREFIX}-boost"
-         "${MINGW_PACKAGE_PREFIX}-libtorrent-rasterbar"
-         "${MINGW_PACKAGE_PREFIX}-qt6-base"
-         "${MINGW_PACKAGE_PREFIX}-qt6-svg"
-         "${MINGW_PACKAGE_PREFIX}-zlib")
-makedepends=("git"
-             "${MINGW_PACKAGE_PREFIX}-cmake"
-             "${MINGW_PACKAGE_PREFIX}-ninja"
-             "${MINGW_PACKAGE_PREFIX}-qt6-tools")
-optdepends=("${MINGW_PACKAGE_PREFIX}-python: needed for torrent search tab")
-# provides=("${MINGW_PACKAGE_PREFIX}-${_realname}")
-# conflicts=("${MINGW_PACKAGE_PREFIX}-${_realname}")
-source=("https://github.com/qbittorrent/qBittorrent/archive/refs/tags/release-${pkgver}.tar.gz")
-sha256sums=('0a3c11296b1daa6e6dd57ebb8426e0388ba7db613e54a758b201648b69702dd4')
-
+mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clang32')
+url="https://starship.rs"
+license=('spdx:ISC')
+depends=("${MINGW_PACKAGE_PREFIX}-libgit2")
+makedepends=("${MINGW_PACKAGE_PREFIX}-rust"
+             "${MINGW_PACKAGE_PREFIX}-cmake")
+options=('staticlibs' 'strip')
+source=("${_realname}-${pkgver}.tar.gz::https://github.com/starship/starship/archive/refs/tags/v${pkgver}.tar.gz")
+sha256sums=('f72f37b7f7a908be70b6b1435a1e7e44ef66710d7c57e290d3ac1107b9b4031a')
+noextract=("${_realname}-${pkgver}.tar.gz")
 
 prepare() {
-  cd "${srcdir}/${_realname}-release-${pkgver}"
-
-  # prepare env for msys2-mingw
-  sed \
-    -i \
-    -e 's/NTDDI_VERSION/#NTDDI_VERSION/g' \
-    -e 's/_WIN32_WINNT/#_WIN32_WINNT/g' \
-    -e 's/_WIN32_IE/#_WIN32_IE/g' \
-    "cmake/Modules/MacroQbtCommonConfig.cmake"
+  tar -xzf "${srcdir}"/${_realname}-${pkgver}.tar.gz -C ${srcdir} || true
+  cp -r ${_realname}-${pkgver} build-${MSYSTEM}
+  ${MINGW_PREFIX}/bin/cargo fetch \
+  --locked \
+  --manifest-path build-${MSYSTEM}/Cargo.toml
 }
 
 build() {
-  cp -rf ${_realname}-release-${pkgver} build-${MSYSTEM} && cd ${srcdir}/build-${MSYSTEM}
-
-  MSYS2_ARG_CONV_EXCL="-DCMAKE_INSTALL_PREFIX=" \
-    "${MINGW_PREFIX}/bin/cmake.exe" \
-      -B "_build" \
-      -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-      -DCMAKE_INSTALL_PREFIX="${MINGW_PREFIX}" \
-      -DQT6=ON \
-      ./
-  "${MINGW_PREFIX}/bin/cmake.exe" \
-    --build "_build"
+  export WINAPI_NO_BUNDLED_LIBRARIES=1
+  ${MINGW_PREFIX}/bin/cargo build \
+  --release \
+  --frozen \
+  --manifest-path build-${MSYSTEM}/Cargo.toml
 }
 
 package() {
-  cd "${srcdir}/build-${MSYSTEM}"
+  ${MINGW_PREFIX}/bin/cargo install \
+  --frozen \
+  --offline \
+  --no-track \
+  --path build-${MSYSTEM} \
+  --root ${pkgdir}${MINGW_PREFIX}
 
-  DESTDIR="$pkgdir" \
-    "${MINGW_PREFIX}/bin/cmake.exe" \
-      --install "_build"
-  install -Dm644 "COPYING" -t "$pkgdir/${MINGW_PREFIX}/share/licenses/${_realname}/COPYING"
-
+  install -Dm 644 build-${MSYSTEM}/LICENSE -t "${pkgdir}${MINGW_PREFIX}"/share/licenses/starship/
+  install -dm 755 "${pkgdir}${MINGW_PREFIX}"/share/{bash-completion/completions,fish/vendor_completions.d,zsh/site-functions}/
+  ./build-${MSYSTEM}/target/release/starship completions bash >"${pkgdir}${MINGW_PREFIX}"/share/bash-completion/completions/starship
+  ./build-${MSYSTEM}/target/release/starship completions fish >"${pkgdir}${MINGW_PREFIX}"/share/fish/vendor_completions.d/starship.fish
+  ./build-${MSYSTEM}/target/release/starship completions zsh >"${pkgdir}${MINGW_PREFIX}"/share/zsh/site-functions/_starship
 }
