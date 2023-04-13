@@ -30,6 +30,7 @@ jobs:
       - name: Build starship
         shell: msys2 {0}
         run: |
+          updpkgsums
           MINGW_ARCH=${{ matrix.sys }} makepkg-mingw --noconfirm --syncdeps
           pacman --upgrade --noconfirm mingw-w64-*
 

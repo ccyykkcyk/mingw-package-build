@@ -3,7 +3,7 @@
 _realname=starship
 pkgbase=mingw-w64-${_realname}
 pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
-pkgver=1.14.1
+pkgver=1.14.2
 pkgrel=1
 pkgdesc="The cross-shell prompt for astronauts (mingw-w64)"
 arch=('any')
