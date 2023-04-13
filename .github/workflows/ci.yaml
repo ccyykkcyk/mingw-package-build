@@ -30,12 +30,8 @@ jobs:
       - name: Build starship
         shell: msys2 {0}
         run: |
-          updpkgsums
           MINGW_ARCH=${{ matrix.sys }} makepkg-mingw --noconfirm --syncdeps
           pacman --upgrade --noconfirm mingw-w64-*
-
-      - name: Auto Commit
-        uses: stefanzweifel/git-auto-commit-action@v4
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v3
