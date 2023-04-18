@@ -11,7 +11,7 @@ arch=('any')
 mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clang32')
 license=('spdx:BSL-1.0')
 makedepends=("${MINGW_PACKAGE_PREFIX}-cc"
-             #"${MINGW_PACKAGE_PREFIX}-boost"
+             "${MINGW_PACKAGE_PREFIX}-boost"
              "${MINGW_PACKAGE_PREFIX}-autotools"
              "${MINGW_PACKAGE_PREFIX}-openssl")
 _realver=${pkgver//./-}
@@ -33,7 +33,7 @@ build() {
     --prefix=${MINGW_PREFIX} \
     --build=${MINGW_CHOST} \
     --host=${MINGW_CHOST} \
-    --without-boost \
+    --with-boost=yes \
     --with-openssl=yes
 
   make
