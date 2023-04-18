@@ -1,63 +1,52 @@
-# Maintainer: ccyykkcyk <https://github.com/ccyykkcyk>
+# Maintainer: Konstantin Podsvirov <konstantin@podsvirov.pro>
 
-_realname=qbittorrent
+_realname=asio
 pkgbase=mingw-w64-${_realname}
-pkgname=${MINGW_PACKAGE_PREFIX}-${_realname}
-pkgver=4.5.2
+pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
+pkgver=1.26.0
 pkgrel=1
-pkgdesc="An advanced BitTorrent client programmed in C++, based on Qt toolkit and libtorrent-rasterbar (mingw-w64)"
+pkgdesc='Cross-platform C++ library for ASynchronous network I/O (mingw-w64)'
+url='https://think-async.com/Asio/'
 arch=('any')
-mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clang32' 'clangarm64')
-url="https://qbittorrent.org/"
-license=('spdx:GPL-2.0-or-later')
-depends=("${MINGW_PACKAGE_PREFIX}-boost"
-         "${MINGW_PACKAGE_PREFIX}-libtorrent-rasterbar"
-         "${MINGW_PACKAGE_PREFIX}-qt6-base"
-         "${MINGW_PACKAGE_PREFIX}-qt6-svg"
-         "${MINGW_PACKAGE_PREFIX}-zlib")
-makedepends=("git"
-             "${MINGW_PACKAGE_PREFIX}-cmake"
-             "${MINGW_PACKAGE_PREFIX}-ninja"
-             "${MINGW_PACKAGE_PREFIX}-qt6-tools")
-optdepends=("${MINGW_PACKAGE_PREFIX}-python: needed for torrent search tab")
-# provides=("${MINGW_PACKAGE_PREFIX}-${_realname}")
-# conflicts=("${MINGW_PACKAGE_PREFIX}-${_realname}")
-source=("https://github.com/qbittorrent/qBittorrent/archive/refs/tags/release-${pkgver}.tar.gz")
-sha256sums=('0a3c11296b1daa6e6dd57ebb8426e0388ba7db613e54a758b201648b69702dd4')
-
+mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clang32')
+license=('spdx:BSL-1.0')
+makedepends=("${MINGW_PACKAGE_PREFIX}-cc"
+             #"${MINGW_PACKAGE_PREFIX}-boost"
+             "${MINGW_PACKAGE_PREFIX}-autotools"
+             "${MINGW_PACKAGE_PREFIX}-openssl")
+_realver=${pkgver//./-}
+_realpath=${_realname}-${_realname}-${_realver}
+source=("${_realpath}.tar.gz::https://github.com/chriskohlhoff/${_realname}/archive/${_realname}-${_realver}.tar.gz")
+sha256sums=('935583f86825b7b212479277d03543e0f419a55677fa8cb73a79a927b858a72d')
 
 prepare() {
-  cd "${srcdir}/${_realname}-release-${pkgver}"
+  cd ${srcdir}/${_realpath}/${_realname}/
 
-  # prepare env for msys2-mingw
-  sed \
-    -i \
-    -e 's/NTDDI_VERSION/#NTDDI_VERSION/g' \
-    -e 's/_WIN32_WINNT/#_WIN32_WINNT/g' \
-    -e 's/_WIN32_IE/#_WIN32_IE/g' \
-    "cmake/Modules/MacroQbtCommonConfig.cmake"
+  autoreconf -fiv
 }
 
 build() {
-  cp -rf ${_realname}-release-${pkgver} build-${MSYSTEM} && cd ${srcdir}/build-${MSYSTEM}
+  cd ${srcdir}/${_realpath}/${_realname}/
 
-  MSYS2_ARG_CONV_EXCL="-DCMAKE_INSTALL_PREFIX=" \
-    "${MINGW_PREFIX}/bin/cmake.exe" \
-      -B "_build" \
-      -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-      -DCMAKE_INSTALL_PREFIX="${MINGW_PREFIX}" \
-      -DQT6=ON \
-      ./
-  "${MINGW_PREFIX}/bin/cmake.exe" \
-    --build "_build"
+  CPPFLAGS+=" -D_WIN32_WINNT=0x601" \
+  ./configure \
+    --prefix=${MINGW_PREFIX} \
+    --build=${MINGW_CHOST} \
+    --host=${MINGW_CHOST} \
+    --with-boost=no \
+    --with-openssl=yes
+
+  make
+}
+
+check() {
+  cd ${srcdir}/${_realpath}/${_realname}/
+  make check
 }
 
 package() {
-  cd "${srcdir}/build-${MSYSTEM}"
+  cd ${srcdir}/${_realpath}/${_realname}/
+  make DESTDIR=${pkgdir} install
 
-  DESTDIR="$pkgdir" \
-    "${MINGW_PREFIX}/bin/cmake.exe" \
-      --install "_build"
-  install -Dm644 "COPYING" -t "$pkgdir/${MINGW_PREFIX}/share/licenses/${_realname}/COPYING"
-
+  install -Dm 644 COPYING LICENSE_1_0.txt -t "${pkgdir}${MINGW_PREFIX}/share/licenses/${_realname}"
 }

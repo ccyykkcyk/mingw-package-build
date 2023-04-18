@@ -1,4 +1,4 @@
-name: qBittorrent build
+name: asio build
 on: [pull_request, push, workflow_dispatch]
 
 jobs:
@@ -10,10 +10,11 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - arch: x86_64
-            msystem: MINGW64
-          - arch: x86_64
-            msystem: UCRT64
+          - { sys: mingw32, env: i686 }
+          - { sys: mingw64, env: x86_64 }
+          - { sys: ucrt64, env: ucrt-x86_64 }
+          - { sys: clang64, env: clang-x86_64 }
+          - { sys: clang32, env: clang-i686 }
 
     steps:
       - name: Checkout repository
@@ -22,19 +23,19 @@ jobs:
       - name: Setup msys2
         uses: msys2/setup-msys2@v2
         with:
-          msystem: ${{ matrix.msystem }}
-          install: mingw-w64-${{ matrix.arch }}-toolchain
+          msystem: ${{ matrix.sys }}
+          install: git base-devel
           update: true
 
-      - name: Build qBittorrent
+      - name: Build asio
         shell: msys2 {0}
         run: |
-          MINGW_ARCH=${{ matrix.msystem }} makepkg-mingw --noconfirm --syncdeps
+          MINGW_ARCH=${{ matrix.sys }} makepkg-mingw --noconfirm --syncdeps
           pacman --upgrade --noconfirm mingw-w64-*
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: qBittorrent_${{ matrix.arch }}
+          name: asio_${{ matrix.env }}
           path: |
             mingw-w64-*.pkg.tar.*
