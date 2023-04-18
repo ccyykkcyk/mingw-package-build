@@ -33,7 +33,7 @@ build() {
     --prefix=${MINGW_PREFIX} \
     --build=${MINGW_CHOST} \
     --host=${MINGW_CHOST} \
-    --with-boost=no \
+    --without-boost \
     --with-openssl=yes
 
   make
