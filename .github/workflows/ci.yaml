@@ -1,4 +1,4 @@
-name: asio build
+name: build
 on: [pull_request, push, workflow_dispatch]
 
 jobs:
@@ -27,7 +27,7 @@ jobs:
           install: git base-devel
           update: true
 
-      - name: Build asio
+      - name: Build
         shell: msys2 {0}
         run: |
           MINGW_ARCH=${{ matrix.sys }} makepkg-mingw --noconfirm --syncdeps
@@ -36,6 +36,6 @@ jobs:
       - name: Upload build artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: asio_${{ matrix.env }}
+          name: _${{ matrix.env }}
           path: |
             mingw-w64-*.pkg.tar.*
